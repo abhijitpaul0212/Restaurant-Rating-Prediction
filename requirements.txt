@@ -10,4 +10,5 @@ mlflow
 flask
 pymongo[srv]
 xgboost
+streamlit
 -e .

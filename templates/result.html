@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="navigation">
+    <a href="{{ url_for('home_page') }}">HOME</a>
+    <a href="{{ url_for('predict_datapoint') }}">FORM</a>
+</div>
+
+<div class="background">
+    <div class="title-box">
+        <h1 class="title">Restaurant Rating Prediction Result: {{final_result}} </h1>
+    </div>
+</div>
+
+
+</body>
+
+</html>
+   

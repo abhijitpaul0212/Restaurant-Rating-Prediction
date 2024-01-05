@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="navigation">
+        <a href="{{ url_for('home_page') }}">HOME</a>
+        <a href="{{ url_for('predict_datapoint') }}">FORM</a>
+    </div>
+
+    <div class="background">
+        <h1 class="title-medium">Restaurant Rating Prediction</h1>
+            
+    <div class="content">
+    <form action="/predict" method="post">
+        <label for="online_order">Online Order:</label>
+        <select name="online_order" id="online_order">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+
+        <br>
+
+        <label for="book_table">Book Table:</label>
+        <select name="book_table" id="book_table">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+
+        <br>
+
+        <label for="location">Location:</label>
+        <select name="location" id="location">
+            <option value="others">Others</option>
+            <option value="BTM">BTM</option>
+            <option value="HSR">HSR</option>
+            <option value="Koramangala 5th Block">Koramangala 5th Block</option>
+            <option value="JP Nagar">JP Nagar</option>
+            <option value="Whitefield">Whitefield</option>
+            <option value="Indiranagar">Indiranagar</option>
+            <option value="Jayanagar">Jayanagar</option>
+            <option value="Marathahalli">Marathahalli</option>
+            <option value="Bannerghatta Road">Bannerghatta Road</option>
+            <option value="Bellandur">Bellandur</option>
+            <option value="Electronic City">Electronic City</option>
+            <option value="Koramangala 1st Block">Koramangala 1st Block</option>
+            <option value="Brigade Road">Brigade Road</option>
+            <option value="Koramangala 7th Block">Koramangala 7th Block</option>
+            <option value="Koramangala 6th Block">Koramangala 6th Block</option>
+            <option value="Sarjapur Road">Sarjapur Road</option>
+            <option value="Ulsoor">Ulsoor</option>
+            <option value="Koramangala 4th Block">Koramangala 4th Block</option>
+            <option value="MG Road">MG Road</option>
+            <option value="Banashankari">Banashankari</option>
+            <option value="Kalyan Nagar">Kalyan Nagar</option>
+            <option value="Richmond Road">Richmond Road</option>
+            <option value="Frazer Town">Frazer Town</option>
+            <option value="Malleshwaram">Malleshwaram</option>
+            <option value="Basavanagudi">Basavanagudi</option>
+            <option value="Residency Road">Residency Road</option>
+            <option value="Banaswadi">Banaswadi</option>
+            <option value="Brookefield">Brookefield</option>
+            <option value="New BEL Road">New BEL Road</option>
+            <option value="Kammanahalli">Kammanahalli</option>
+            <option value="Rajajinagar">Rajajinagar</option>
+            <option value="Church Street">Church Street</option>
+            <option value="Lavelle Road">Lavelle Road</option>
+            <option value="Shanti Nagar">Shanti Nagar</option>
+        </select>
+
+
+        <br>
+
+        <label for="rest_type">Restaurant Type:</label>
+        <select name="rest_type" id="rest_type">
+            <option value="Quick Bites">Quick Bites</option>
+            <option value="Casual Dining">Casual Dining</option>
+            <option value="Cafe">Cafe</option>
+            <option value="Delivery">Delivery</option>
+            <option value="Dessert Parlor">Dessert Parlor</option>
+            <option value="Takeaway, Delivery">Takeaway, Delivery</option>
+            <option value="Casual Dining, Bar">Casual Dining, Bar</option>
+            <option value="Bakery">Bakery</option>
+        </select>
+
+        <br>
+
+        <label for="cuisines">Cuisines:</label>
+        <select name="cuisines" id="cuisines">
+            <option value="others">Others</option>
+            <option value="North Indian">North Indian</option>
+            <option value="Chinese">Chinese</option>
+            <option value="South Indian">South Indian</option>
+            <option value="Biryani">Biryani</option>
+            <option value="Bakery, Desserts">Bakery, Desserts</option>
+            <option value="Fast Food">Fast Food</option>
+            <option value="Desserts">Desserts</option>
+            <option value="Cafe">Cafe</option>
+            <option value="South Indian, North Indian, Chinese">South Indian, North Indian, Chinese</option>
+            <option value="Bakery">Bakery</option>
+            <option value="Chinese, North Indian">Chinese, North Indian</option>
+            <option value="Mithai, Street Food">Mithai, Street Food</option>
+            <option value="Desserts, Ice Cream">Desserts, Ice Cream</option>
+            <option value="North Indian, Chinese, Biryani">North Indian, Chinese, Biryani</option>
+            <option value="South Indian, North Indian">South Indian, North Indian</option>
+            <option value="North Indian, South Indian">North Indian, South Indian</option>
+            <option value="North Indian, South Indian, Chinese">North Indian, South Indian, Chinese</option>
+            <option value="Beverages">Beverages</option>
+        </select>
+
+
+        <br>
+
+        <label for="cost_for_2">Cost for 2:</label>
+        <input type="number" name="cost_for_2" id="cost_for_2">
+
+        <br>
+
+        <label for="type">Type:</label>
+        <select name="type" id="type">
+            <option value="Delivery">Delivery</option>
+            <option value="Dine-out">Dine-out</option>
+            <option value="Desserts">Desserts</option>
+            <option value="Cafes">Cafes</option>
+            <option value="Drinks & nightlife">Drinks & nightlife</option>
+            <option value="Buffet">Buffet</option>
+            <option value="Pubs and bars">Pubs and bars</option>
+        </select>
+
+        <br>
+
+        <label for="votes">Votes:</label>
+        <input type="number" name="votes" id="votes">
+
+        <br>
+
+        <div class="submit-container"></div>
+        <button type="submit">Submit</button>
+        </div>
+    </form>
+    
+</div>
+
+</div>
+</body>
+
+</html>
