@@ -3,7 +3,7 @@
 import sys
 import os
 from dataclasses import dataclass
-
+import pandas as pd
 from src.RestaurantRatingPrediction.logger import logging
 from src.RestaurantRatingPrediction.exception import CustomException
 from src.RestaurantRatingPrediction.utils.data_processor import CSVProcessor, DBProcessor
@@ -39,30 +39,25 @@ class DataIngestion:
         logging.info("Data Ingestion started")
 
         try:
+            mongo_uri = "mongodb+srv://root:root@cluster0.k3s4vuf.mongodb.net/?retryWrites=true&w=majority"
+
             # Read raw dataset from MongoDB database
-            data = self.utils.run_data_pipeline(self.db_processor, "mongodb+srv://root:root@cluster0.k3s4vuf.mongodb.net/?retryWrites=true&w=majority&ssl=true", "restaurant_ratings/data")
-            # data = self.utils.run_data_pipeline(self.csv_processor, "artifacts", "raw.csv")
-            # data = self.utils.run_data_pipeline(self.csv_processor, "../notebooks/data", "zomato.csv", skiprows=0, skipinitialspace=True)
-            # data = self.utils.run_data_pipeline(self.csv_processor, filepath=None, filename=self.ingestion_config.raw_data_path, skiprows=0, skipinitialspace=True)
-            # data = self.utils.run_data_pipeline(CSVProcessor(), "artifacts", "raw.csv", skiprows=0, skipinitialspace=True)
+            data = self.utils.run_data_pipeline(self.db_processor, mongo_uri, "zomato_database/reviews")       
             os.makedirs(os.path.dirname(os.path.join(self.ingestion_config.raw_data_path)), exist_ok=True)
 
             data.to_csv(self.ingestion_config.raw_data_path, index=False)
             logging.info("Raw dataset is saved in artifacts folder")
 
-            train_data, test_data = train_test_split(data, test_size=0.40, random_state=42)
-            val_data, test_data = train_test_split(test_data, test_size=0.50, random_state=42)
+            train_data, test_data = train_test_split(data, test_size=0.33, random_state=10)
             logging.info("Dataset is splitted into Train & Test data")
 
             train_data.to_csv(self.ingestion_config.train_data_path, index=False)
             test_data.to_csv(self.ingestion_config.test_data_path, index=False)
-            val_data.to_csv(self.ingestion_config.val_data_path, index=False)
             logging.info("Train & Test dataset are saved in artifacts folder")
 
             return (
                 self.ingestion_config.train_data_path,
-                self.ingestion_config.test_data_path,
-                self.ingestion_config.val_data_path
+                self.ingestion_config.test_data_path
             )
 
         except Exception as e:

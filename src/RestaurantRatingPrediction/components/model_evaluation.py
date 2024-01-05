@@ -34,13 +34,15 @@ class ModelEvaluation:
             X_test, y_test = (test_array.iloc[:, :-1], test_array.iloc[:, -1])
             model_path = os.path.join("artifacts", "model.pkl.gz")
             model = Utils().load_object(model_path)
+            model_name = str(model).split("(")[0]
 
             with mlflow.start_run(run_id=mlflow_setup.get_active_run_id(), nested=True):
                 
-                mlflow.set_tag("Best Model", str(model).split("(")[0])
+                mlflow.set_tag("Best Model", model_name)
                 
                 (r2, mse, rmse) = self.eval_metrics(model, X_test, y_test)
 
+                logging.info("Model: {}".format(model_name))
                 logging.info("r2_score: {}".format(r2))
                 logging.info("mse_score: {}".format(mse))
                 logging.info("rmse_score: {}".format(rmse))

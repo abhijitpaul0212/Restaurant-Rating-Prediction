@@ -119,7 +119,6 @@ class Utils:
         :param label: DataFrame: Label to be used for prediction
         :return: dict: A dictionary with the model, accuracy score, f-score, precision score and recall score
         """
-
         r2 = round(cross_val_score(model, features, label, cv=10, n_jobs=-1, scoring='r2').mean(), 2)
         mse = round(cross_val_score(model, features, label, cv=10, n_jobs=-1, scoring='neg_mean_squared_error').mean(), 2)
         rmse = round(cross_val_score(model, features, label, cv=10, n_jobs=-1, scoring=make_scorer(lambda y_true, y_pred: -np.sqrt(mean_squared_error(y_true, y_pred)), greater_is_better=False)).mean(), 2)
@@ -130,7 +129,7 @@ class Utils:
             'mse': mse,
             'rmse': rmse}
         
-    def evaluate_models_with_hyperparameter(self, models: dict, train_features, train_label, test_features, test_label, metric='accuracy', verbose=0):
+    def evaluate_models_with_hyperparameter(self, models: dict, train_features, train_label, test_features, test_label, metric='r2', verbose=0):
         """
         The evaluate_models function takes in a tuple of models and their parameters, 
         train_features, train_label, val_features and val_label. It then uses the RandomizedSearchCV function to find the best model for each model passed into it.
@@ -141,8 +140,7 @@ class Utils:
         :param val_features: DataFrame: Validation features to the evaluate_models function
         :param val_label: Validation labels to the predict function
         :return: tuple: The best model and a dictionary of the model report
-        """         
-        np.random.seed(42)        
+        """               
         TRAINING_SCORE = {}
 
         def log_params_with_prefix(prefix, params):
@@ -152,37 +150,39 @@ class Utils:
                 mlflow.log_param(log_key, value)
                 
         for model_name, (model, params) in models.items():
-
+            np.random.seed(42)  
             with mlflow.start_run(run_id=mlflow_setup.get_active_run_id(), nested=True):               
                 logging.info("\n\n========================= {} =======================".format(model_name))
 
-                random_search_cv = RandomizedSearchCV(estimator=model, param_distributions=params, n_iter=5, scoring=metric, n_jobs=-1, cv=5, verbose=verbose, random_state=5)
+                search_cv = RandomizedSearchCV(estimator=model, param_distributions=params, n_iter=5, scoring=metric, n_jobs=-1, cv=5, verbose=verbose, random_state=5)
+                # search_cv = GridSearchCV(estimator=model, param_grid=params, scoring=metric, n_jobs=-1, cv=5, verbose=verbose)
 
                 start_time = self.timer(None)
-                random_search_cv.fit(train_features, train_label)
+                search_cv.fit(train_features, train_label)
                 self.timer(start_time)
 
-                logging.info("BEST PARAMS: {}".format(random_search_cv.best_params_))
-                log_params_with_prefix(model_name, random_search_cv.best_params_)
+                logging.info("BEST PARAMS: {}".format(search_cv.best_params_))
+                log_params_with_prefix(model_name, search_cv.best_params_)
 
-                logging.info("BEST TRAINING SCORE USING HYPER-PARAMTERS: {}".format(round(random_search_cv.best_score_, 2)))
-                TRAINING_SCORE[model_name] = round(random_search_cv.best_score_, 2)
+                logging.info("BEST TRAINING SCORE USING HYPER-PARAMTERS: {}".format(round(search_cv.best_score_, 2)))
+                TRAINING_SCORE[model_name] = round(search_cv.best_score_, 2)
 
-                mlflow.log_metric("{} score".format(metric), round(random_search_cv.best_score_, 2))
+                mlflow.log_metric("{} score".format(metric), round(search_cv.best_score_, 2))
 
-                self.predict(model_name=model_name, model=random_search_cv.best_estimator_, features=test_features, label=test_label)
+                self.predict(model_name=model_name, model=search_cv.best_estimator_, features=test_features, label=test_label)
                 
         logging.info("All training scores: {}".format(TRAINING_SCORE))
         logging.info("All testing scores: {}".format(self.MODEL_REPORT))
 
+        # Fetching the best of training scores
         SCORES = []
         for model_name, values in self.MODEL_REPORT.items():
             for metric_name, score in values.items():
                 if metric_name == metric:
                     SCORES.append((model_name, score))        
 
-        best_score = sorted(SCORES, reverse=True)[0][1]
-        best_model_name = sorted(SCORES, reverse=True)[0][0]                
+        best_score = sorted(SCORES, reverse=True, key=lambda x: x[1])[0][1]
+        best_model_name = sorted(SCORES, reverse=True, key=lambda x: x[1])[0][0]                
         best_model = [values['model'] for model_name, values in self.MODEL_REPORT.items() if model_name == best_model_name][0]
 
         logging.info("BEST MODEL: {}".format(best_model_name))
@@ -214,12 +214,12 @@ class Utils:
             # Evaluate the best model on the train & test set
             self.predict(model_name=model_name, model=model, features=test_features, label=test_label)
             
-        logging.info("Model Report: {}".format(self.MODEL_REPORT))
+        logging.info("All Model Report: {}".format(self.MODEL_REPORT))
         best_model_score = max(sorted(model[metric] for model in self.MODEL_REPORT.values()))
         best_model_name = list(self.MODEL_REPORT.keys())[list(model[metric] for model in self.MODEL_REPORT.values()).index(best_model_score)]
         best_model = self.MODEL_REPORT[best_model_name]['model']
         model_report = self.MODEL_REPORT[best_model_name]
-        print("BEST MODEL REPORT: ", model_report)   
+        logging.info("Best Model Report: {} ".format(model_report))
         return best_model
 
     def smote_balance(self, data):
@@ -271,6 +271,40 @@ class Utils:
         collection = client[collection[0]][collection[1]]
         data = list(collection.find())
         return pd.DataFrame(data)
+
+    def handle_categorical_columns(self, data, column_thresholds):
+        try:
+            for column_name, threshold in column_thresholds.items():
+                column_count = data[column_name].value_counts()
+                categories_below_threshold = column_count[column_count < threshold].index
+                data[column_name] = np.where(data[column_name].isin(categories_below_threshold), 'others', data[column_name])
+                logging.info("Updated column {} with threshold {}".format(column_name, threshold))
+            return data
+
+        except Exception as e:
+            logging.error("Error in handling categorical columns")
+            raise CustomException(e, sys)
+
+    def handle_rate_column(self, data, column_name="rate"):
+        try:
+            data[column_name] = data[column_name].apply(lambda value: np.nan if value in ["NEW", "-"] else float(str(value).split("/")[0]))
+
+            # Replacing null values with the mean
+            data[column_name] = data[column_name].fillna(data[column_name].mean())
+            return data
+
+        except Exception as e:
+            logging.error("Error in handling {} column".format(column_name))
+            raise CustomException(e, sys)
+    
+    def handle_cost_column(self, data):
+        def fix_cost(cost):
+            cost = str(cost).replace(",", "")
+            return float(cost)
+
+        data['cost_for_2'] = data['cost_for_2'].apply(fix_cost)
+        logging.info("`cost` column values are fixed")
+        return data
 
 
 if __name__ == "__main__":
