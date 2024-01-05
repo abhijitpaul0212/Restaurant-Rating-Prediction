@@ -8,7 +8,8 @@ from src.RestaurantRatingPrediction.logger import logging
 from src.RestaurantRatingPrediction.exception import CustomException
 from src.RestaurantRatingPrediction.utils.utils import Utils
 
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor, AdaBoostRegressor
 from sklearn.tree import DecisionTreeRegressor
 from xgboost import XGBRegressor
 
